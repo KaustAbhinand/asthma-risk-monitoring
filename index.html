@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Homepage</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    height: 100vh;
+    background: linear-gradient(135deg, #5f9cff, #d946ef);
+}
+
+.container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.welcome {
+    margin-top: 40px;
+    text-align: center;
+    color: white;
+    font-size: 20px;
+    max-width: 600px;
+}
+
+.center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.card {
+    width: 360px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.title {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    font-size: 13px;
+    color: #555;
+}
+
+.input-group input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #ddd;
+    padding: 8px 0;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-bottom: 2px solid #d946ef;
+}
+
+.forgot {
+    font-size: 12px;
+    text-align: right;
+    color: #555;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    background: linear-gradient(90deg, #5f9cff, #d946ef);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 16px;
+    font-size: 15px;
+    transition: opacity 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.signup-text {
+    font-size: 13px;
+    color: #555;
+}
+
+.signup-link {
+    color: #d946ef;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.signup-link:hover {
+    text-decoration: underline;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+    <div class="welcome">
+        Welcome back! Login to view your dashboard, or sign up if you are new!
+    </div>
+
+    <div class="center">
+        <div class="card">
+            <div class="title">Login</div>
+
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="loginEmail" placeholder="Type your username">
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Type your password">
+            </div>
+
+            <div class="forgot">Forgot password?</div>
+
+            <button class="btn" onclick="login()">LOGIN</button>
+
+            <div class="signup-text">
+                Don't have an account?
+                <a class="signup-link" href="register.html">SIGN UP</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://egjyjnwswcckknjienhi.supabase.co";
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnanlqbndzd2Nja2tuamllbmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjMxMTgsImV4cCI6MjA5MTU5OTExOH0.6M4DpPIS0Fxpasf5SHn6K31qJQaQ3T_UygSXhDtcTds';
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
+</script>
+<script>
+async function login() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    if (!email || !password) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+    });
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    //  Login success
+    alert("Login successful!");
+
+    // Redirect to dashboard
+    window.location.href = "dashboard.html";
+}
+
+</script>
+
+</body>
+</html>
+

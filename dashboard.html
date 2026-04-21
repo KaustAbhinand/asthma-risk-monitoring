@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --blue: #5f9cff;
+    --pink: #d946ef;
+    --gradient: linear-gradient(135deg, #5f9cff, #d946ef);
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --risk-low: #22c55e;
+    --risk-med: #f59e0b;
+    --risk-high: #ef4444;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+    background: var(--gradient);
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.topbar-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    letter-spacing: 0.3px;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+}
+
+.logout-btn {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 99px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.logout-btn:hover { background: rgba(255,255,255,0.35); }
+
+/* ── PAGE LAYOUT ── */
+.page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+}
+
+/* ── SECTION TITLE ── */
+.section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    margin-top: 28px;
+}
+
+/* ── CARD ── */
+.card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    border: 1px solid var(--border);
+}
+
+/* ── RISK SCORE CARD ── */
+.risk-card {
+    background: var(--gradient);
+    border-radius: 14px;
+    padding: 28px 28px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    box-shadow: 0 6px 24px rgba(95,156,255,0.3);
+}
+
+.risk-left h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+
+.risk-left p {
+    font-size: 13px;
+    opacity: 0.85;
+    max-width: 360px;
+    line-height: 1.5;
+}
+
+.risk-score-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 3px solid rgba(255,255,255,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.risk-score-number {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.risk-score-label {
+    font-size: 11px;
+    opacity: 0.8;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.risk-badge {
+    display: inline-block;
+    margin-top: 10px;
+    background: rgba(255,255,255,0.25);
+    padding: 4px 14px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+/* ── 2-COL GRID ── */
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* ── INFO LIST inside cards ── */
+.info-list { list-style: none; }
+
+.info-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    gap: 12px;
+}
+
+.info-list li:last-child { border-bottom: none; }
+
+.info-key {
+    color: var(--muted);
+    font-size: 13px;
+    min-width: 130px;
+    flex-shrink: 0;
+}
+
+.info-val {
+    color: var(--text);
+    font-weight: 500;
+    text-align: right;
+}
+
+/* ── TAG CHIPS ── */
+.tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+
+.tag {
+    background: #f0f4ff;
+    color: var(--blue);
+    border-radius: 99px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #dde8ff;
+}
+
+.tag.red   { background: #fff1f1; color: #ef4444; border-color: #fecaca; }
+.tag.amber { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+.tag.green { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+
+/* ── CARD HEADER ── */
+.card-header {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: var(--text);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-icon { font-size: 18px; }
+
+/* ── LOCATION CARD ── */
+.location-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.location-pin {
+    font-size: 28px;
+}
+
+.location-info h3 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.location-info p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+.location-aqi {
+    margin-left: auto;
+    text-align: center;
+    background: #fff8e1;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 10px 18px;
+}
+
+.aqi-number { font-size: 22px; font-weight: 700; color: #d97706; }
+.aqi-label  { font-size: 11px; color: var(--muted); }
+
+/* ── PRECAUTIONS TEXT AREA ── */
+.precautions-box {
+    width: 100%;
+    min-height: 150px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+    background: #fafafa;
+}
+
+.precautions-box:focus {
+    border-color: var(--blue);
+    background: white;
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <span class="topbar-title">Your Personal Dashboard</span>
+    <div class="topbar-right">
+        <span id="topbarName">Loading...</span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</div>
+
+<div class="page">
+
+    <!-- ── RISK SCORE ── -->
+    <div class="section-title">Risk Overview</div>
+    <div class="risk-card">
+        <div class="risk-left">
+            <h2>Hello, <span id="heroName">–</span></h2>
+            <p>Based on your profile and current environmental data, here is your estimated asthma risk score.</p>
+            <div class="risk-badge" id="riskBadge">–</div>
+        </div>
+        <div class="risk-score-circle">
+            <span class="risk-score-number" id="riskNumber">–</span>
+            <span class="risk-score-label">/ 100</span>
+        </div>
+    </div>
+
+    <!-- ── PERSONAL INFO ── -->
+    <div class="section-title">Personal Information</div>
+    <div class="card">
+        <div class="card-header"><span class="card-icon"></span> Profile</div>
+        <ul class="info-list">
+            <li><span class="info-key">Full Name</span>      <span class="info-val" id="d-name">–</span></li>
+            <li><span class="info-key">Age</span>            <span class="info-val" id="d-age">–</span></li>
+            <li><span class="info-key">Gender</span> <span class="info-val" id="d-gender">–</span></li>
+            <li><span class="info-key">City / Region</span>  <span class="info-val" id="d-city">–</span></li>
+            <li><span class="info-key">Environment</span>    <span class="info-val" id="d-env">–</span></li>
+        </ul>
+    </div>
+
+
+    <!-- ── MEDICAL + LIFESTYLE ── -->
+    <div class="section-title">Medical History & Lifestyle</div>
+    <div class="grid-2">
+
+        <div class="card">
+            <div class="card-header"><span class="card-icon"></span> Medical</div>
+            <ul class="info-list">
+                <li>
+                    <span class="info-key">Past Illnesses</span>
+                    <span class="info-val"><div class="tags" id="d-illnesses"></div></span>
+                </li>
+                <li>
+                    <span class="info-key">Family History</span>
+                    <span class="info-val" id="d-family">–</span>
+                </li>
+                <li>
+                    <span class="info-key">Symptoms</span>
+                    <span class="info-val"><div class="tags" id="d-symptoms"></div></span>
+                </li>
+                <li>
+                    <span class="info-key">Medications</span>
+                    <span class="info-val" id="d-meds">–</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><span class="card-icon"></span> Lifestyle</div>
+            <ul class="info-list">
+                <li><span class="info-key">Smoking</span>     <span class="info-val" id="d-smoking">–</span></li>
+                <li><span class="info-key">Occupation</span>  <span class="info-val" id="d-work">–</span></li>
+                <li><span class="info-key">Activity</span>    <span class="info-val" id="d-activity">–</span></li>
+                <li>
+                    <span class="info-key">Allergens</span>
+                    <span class="info-val"><div class="tags" id="d-allergens"></div></span>
+                </li>
+                <li><span class="info-key">Stress Level</span> <span class="info-val" id="d-stress">–</span></li>
+                <li><span class="info-key">Sleep Quality</span><span class="info-val" id="d-sleep">–</span></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- ── LOCATION ── -->
+    <div class="section-title">Present Location</div>
+    <div class="card">
+        <div class="card-header"><span class="card-icon"></span> Location & Air Quality</div>
+        <div class="location-row">
+            <span class="location-pin"></span>
+            <div class="location-info">
+                <h3 id="loc-city">Detecting...</h3>
+                <p id="loc-coords">Fetching coordinates...</p>
+            </div>
+            <div class="location-aqi">
+                <div class="aqi-number" id="aqi-val"></div>
+                <div class="aqi-label">AQI (Placeholder)</div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ── PRECAUTIONS ── -->
+    <div class="section-title">Precautionary Measures</div>
+    <div class="card">
+        <div class="card-header"><span class="card-icon"></span> Recommendations</div>
+        <textarea class="precautions-box" id="precautionsBox" placeholder="Precautionary measures will appear here once the risk engine is connected..."></textarea>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://egjyjnwswcckknjienhi.supabase.co";
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnanlqbndzd2Nja2tuamllbmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjMxMTgsImV4cCI6MjA5MTU5OTExOH0.6M4DpPIS0Fxpasf5SHn6K31qJQaQ3T_UygSXhDtcTds';
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
+
+// ─────────────────────────────
+// GET USER + PROFILE
+// ─────────────────────────────
+async function loadUserData() {
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+        window.location.href = "index.html";
+        return;
+    }
+
+    // Fetch profile from DB
+    const { data: profile, error } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (error) {
+        console.error(error);
+        alert("Error loading profile");
+        return;
+    }
+
+    populate(profile);
+    getLocation(profile);
+    getPrediction();
+    getPrecautions();
+}
+
+// ─────────────────────────────
+// POPULATE UI
+// ─────────────────────────────
+function populate(user) {
+
+    document.getElementById('topbarName').textContent = user.name;
+    document.getElementById('heroName').textContent   = user.name.split(' ')[0];
+
+    document.getElementById('d-name').textContent   = user.name;
+    document.getElementById('d-age').textContent    = user.age + ' years';
+    document.getElementById('d-gender').textContent = user.gender;
+    document.getElementById('d-city').textContent   = user.city;
+    document.getElementById('d-env').textContent    = user.environment;
+
+    document.getElementById('d-family').textContent  = user.family_illnesses?.join(", ") || 'None';
+    document.getElementById('d-meds').textContent    = user.medications || 'None';
+    document.getElementById('d-smoking').textContent = user.smoking;
+    document.getElementById('d-work').textContent    = user.work;
+    document.getElementById('d-activity').textContent= user.activity;
+    document.getElementById('d-stress').textContent  = user.stress_level + ' / 10';
+    document.getElementById('d-sleep').textContent   = user.sleep_quality + ' / 10';
+
+    renderTags('d-illnesses', user.illnesses);
+    renderTags('d-symptoms',  user.symptoms);
+    renderTags('d-allergens', user.allergens);
+
+    // Risk (placeholder until model added)
+    document.getElementById('riskNumber').textContent = "--";
+    document.getElementById('riskBadge').textContent  = "Not calculated";
+}
+
+
+// ─────────────────────────────
+// TAG RENDER
+// ─────────────────────────────
+function renderTags(id, items) {
+    const el = document.getElementById(id);
+
+    if (!items || items.length === 0) {
+        el.innerHTML = '<span>None</span>';
+        return;
+    }
+
+    el.innerHTML = items.map(i => `<span class="tag">${i}</span>`).join('');
+}
+
+
+// ─────────────────────────────
+// GEOLOCATION
+// ─────────────────────────────
+function getLocation(user) {
+    if (!navigator.geolocation) {
+        document.getElementById('loc-city').textContent = user.city;
+        document.getElementById('loc-coords').textContent = 'Geolocation not supported';
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            const lat = pos.coords.latitude.toFixed(4);
+            const lon = pos.coords.longitude.toFixed(4);
+
+            document.getElementById('loc-city').textContent = user.city;
+            document.getElementById('loc-coords').textContent = `Lat: ${lat} | Lon: ${lon}`;
+            document.getElementById('aqi-val').textContent = '--';
+        },
+        function() {
+            document.getElementById('loc-city').textContent = user.city;
+            document.getElementById('loc-coords').textContent = 'Permission denied';
+        }
+    );
+}
+
+async function getUserProfile() {
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+    console.log("Auth user:", user);  
+
+    if (!user) {
+        console.log("No logged-in user");
+        return null;
+    }
+
+    const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Profile error:", error);
+        return null;
+    }
+
+    console.log("Profile:", data);  
+
+    return data;
+}
+
+function transformToModelInput(user) { // transform the data in the ML model form
+
+    return {
+        age: user.age,
+
+        gender: user.gender === "Male" ? 0 : 1,
+
+        smoking: user.smoking === "no" ? 0 : 1,
+
+        activity: parseInt(user.activity) || 0,   // already numeric
+
+        work_type: parseInt(user.work) || 0,
+
+        stress_level: user.stress_level,
+        sleep_quality: user.sleep_quality,
+
+        // Convert arrays → counts
+        illness_count: user.illnesses ? user.illnesses.length : 0,
+
+        family_history: user.family_illnesses && user.family_illnesses.length > 0 ? 1 : 0,
+
+        symptom_score: user.symptoms ? user.symptoms.length : 0,
+
+        allergen_count: user.allergens ? user.allergens.length : 0,
+
+        // TEMP (until sensors)
+        pm25: 0,
+        no2: 0,
+        h2s: 0,
+        temperature: 0,
+
+        email : user.email
+    };
+}
+
+
+async function getPrediction() { // get the predictions
+    console.log("getPrediction called");
+    const profile = await getUserProfile();
+    if (!profile) return;
+
+    const { data: {user}} = await supabaseClient.auth.getUser();
+    const data = transformToModelInput({...profile, email: user.email});
+
+    const response = await fetch("http://localhost:3000/predict", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    document.getElementById("riskNumber").innerText = result.risk;
+    document.getElementById("riskBadge").innerText = result.level;
+
+    if (result.sensors) { console.log("Sensor data:", result.sensors); // Show PM2.5 as AQI placeholder 
+    //document.getElementById("aqi-val").innerText = result.sensors.pm25;
+}
+    return result;
+}
+
+// get the precautions from gemini
+
+
+async function getPrecautions() {
+    console.log("getPrecautions called");
+
+    const user = await getUserProfile();
+    if (!user) return;
+
+    const data = transformToModelInput(user);
+
+    try {
+        const response = await fetch("http://localhost:3000/precautions", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        console.log("Precautions:", result);
+
+        document.getElementById("precautionsBox").value = result.precautions;
+
+    } catch (err) {
+        console.error("Precautions error:", err);
+    }
+}
+
+// ─────────────────────────────
+// LOGOUT
+// ─────────────────────────────
+async function logout() {
+    await supabaseClient.auth.signOut();
+    window.location.href = "index.html";
+}
+
+// ─────────────────────────────
+// INIT
+// ─────────────────────────────
+loadUserData();
+
+//  Real-time updates every 15 seconds
+let pollingInterval;
+
+async function startPolling() {
+    // Prevent duplicate intervals
+    if (pollingInterval) return;
+
+    pollingInterval = setInterval(async () => {
+        console.log("🔄 Refreshing data...");
+        await getPrediction();
+    }, 15000); // 15 seconds
+}
+
+// Start polling after initial load
+startPolling();
+
+</script>
+
+</body>
+</html>

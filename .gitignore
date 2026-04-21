@@ -1,0 +1,5 @@
+back_end/.env
+back_end/model.js
+back_end/listmodels.mjs
+node_modules/
+.vscode/

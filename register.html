@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Register – Asthma Risk Prediction</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --blue: #5f9cff;
+    --pink: #d946ef;
+    --gradient: linear-gradient(135deg, #5f9cff, #d946ef);
+    --text-main: #1a1a2e;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --error: #ef4444;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--gradient);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 16px;
+}
+
+.page-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 28px;
+}
+
+.page-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+}
+
+.page-header p {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-top: 6px;
+}
+
+/* ── CARD ── */
+.card {
+    width: 100%;
+    max-width: 520px;
+    background: white;
+    border-radius: 20px;
+    padding: 36px 38px 32px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+}
+
+/* ── PROGRESS ── */
+.progress-wrapper { margin-bottom: 32px; }
+
+.step-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.step-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    flex: 1;
+    text-align: center;
+    transition: color 0.3s;
+}
+
+.step-label.active { color: var(--pink); }
+.step-label.done   { color: var(--blue); }
+
+.bar-track {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--gradient);
+    transition: width 0.45s cubic-bezier(0.4,0,0.2,1);
+    width: 33.33%;
+}
+
+.step-dots {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px #e5e7eb;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: white;
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+.dot.done   { background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+.dot.active { background: var(--pink); box-shadow: 0 0 0 2px var(--pink); }
+
+/* ── STEP PANELS ── */
+.step-panel { display: none; animation: fadeSlide 0.35s ease; }
+.step-panel.active { display: block; }
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateX(14px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.step-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.step-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 22px;
+}
+
+/* ── FIELDS ── */
+.field-row { display: flex; gap: 16px; }
+.field-row .field { flex: 1; }
+
+.field { margin-bottom: 18px; }
+
+.field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.field label .req { color: var(--pink); margin-left: 2px; }
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid var(--border);
+    padding: 8px 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-main);
+    background: transparent;
+    outline: none;
+    transition: border-color 0.25s;
+    appearance: none;
+}
+
+.field textarea {
+    resize: none;
+    height: 64px;
+    line-height: 1.5;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus { border-bottom-color: var(--pink); }
+
+.field input::placeholder,
+.field textarea::placeholder { color: #c0c4cc; }
+
+/* ── ERROR ── */
+.err {
+    font-size: 11px;
+    color: var(--error);
+    margin-top: 4px;
+    display: none;
+}
+
+/* ── SUBMIT ERROR BANNER ── */
+.submit-error {
+    display: none;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--error);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* ── RADIO PILLS ── */
+.radio-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.radio-pill {
+    padding: 7px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 99px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-muted);
+    user-select: none;
+}
+
+.radio-pill input { display: none; }
+.radio-pill:hover { border-color: var(--pink); color: var(--pink); }
+.radio-pill.selected { border-color: var(--pink); background: var(--pink); color: white; }
+
+/* ── CHECKBOX GROUP ── */
+.check-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-main);
+    transition: border-color 0.2s, background 0.2s;
+    user-select: none;
+}
+
+.check-item:hover { border-color: var(--pink); background: #fdf4ff; }
+.check-item.selected { border-color: var(--pink); background: #fdf4ff; }
+
+.check-item input[type="checkbox"] {
+    accent-color: var(--pink);
+    width: 15px; height: 15px;
+    cursor: pointer;
+}
+
+/* ── ELABORATE BOX ── */
+.elaborate-box {
+    display: none;
+    margin-top: 10px;
+    animation: fadeSlide 0.25s ease;
+}
+
+.elaborate-box textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-main);
+    resize: none;
+    height: 70px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fafafa;
+}
+
+.elaborate-box textarea:focus { border-color: var(--pink); background: white; }
+
+.elaborate-box label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* ── SECTION DIVIDER ── */
+.section-divider {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin: 6px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── SLIDERS ── */
+.slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.slider-wrap input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 6px;
+    border-radius: 99px;
+    outline: none;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    opacity: 1;
+}
+
+.slider-wrap input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--pink);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px var(--pink);
+}
+
+.slider-wrap input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--pink);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px var(--pink);
+}
+
+.slider-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--pink);
+    min-width: 36px;
+    text-align: right;
+}
+
+/* ── NAV BUTTONS ── */
+.nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 26px;
+    gap: 12px;
+}
+
+.btn-back {
+    background: none;
+    border: 2px solid var(--border);
+    border-radius: 99px;
+    padding: 10px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-back:hover { border-color: var(--blue); color: var(--blue); }
+
+.btn-next, .btn-submit {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 99px;
+    background: var(--gradient);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+}
+
+.btn-next:hover, .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── LOGIN LINK ── */
+.login-link-row {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.login-link-row a { color: var(--pink); font-weight: 600; text-decoration: none; }
+.login-link-row a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+    <h1>Register here</h1>
+    <p>Create your profile to get a personalised risk assessment</p>
+</div>
+
+<div class="card">
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-wrapper" id="progressWrapper">
+        <div class="step-labels">
+            <span class="step-label active" id="lbl1">Personal</span>
+            <span class="step-label"        id="lbl2">Medical</span>
+            <span class="step-label"        id="lbl3">Lifestyle</span>
+        </div>
+        <div class="bar-track">
+            <div class="bar-fill" id="barFill"></div>
+        </div>
+        <div class="step-dots">
+            <div class="dot active" id="dot1">1</div>
+            <div class="dot"        id="dot2">2</div>
+            <div class="dot"        id="dot3">3</div>
+        </div>
+    </div>
+
+    <!-- ══ STEP 1 – PERSONAL ══ -->
+    <div class="step-panel active" id="step1">
+        <div class="step-title">Personal Information</div>
+        <div class="step-subtitle">All fields marked <span style="color:#d946ef">*</span> are required.</div>
+
+        <div class="field">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" id="name" placeholder="e.g. Arjun Mehta">
+            <div class="err" id="errName">Please enter your full name.</div>
+        </div>
+
+        <div class="field-row">
+            <div class="field">
+                <label>Age <span class="req">*</span></label>
+                <input type="number" id="age" placeholder="e.g. 28" min="1" max="120">
+                <div class="err" id="errAge">Please enter a valid age.</div>
+            </div>
+            <div class="field">
+                <label>Gender<span class="req">*</span></label>
+                <select id="gender">
+                    <option value="" disabled selected>Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other / Prefer not to say</option>
+                </select>
+                <div class="err" id="errGender">Please select an option.</div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>City / Region <span class="req">*</span></label>
+            <input type="text" id="city" placeholder="e.g. Hyderabad, Telangana">
+            <div class="err" id="errCity">Please enter your city or region.</div>
+        </div>
+
+        <div class="field">
+            <label>Living Environment <span class="req">*</span></label>
+            <div class="radio-group" id="envGroup">
+                <label class="radio-pill"><input type="radio" name="env" value="Urban"> Urban</label>
+                <label class="radio-pill"><input type="radio" name="env" value="Suburban"> Suburban</label>
+                <label class="radio-pill"><input type="radio" name="env" value="Rural"> Rural</label>
+                <label class="radio-pill"><input type="radio" name="env" value="Industrial"> Industrial</label>
+            </div>
+            <div class="err" id="errEnv">Please select your living environment.</div>
+        </div>
+
+        <div class="field">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" id="email" placeholder="e.g. abc@example.com">
+            <div class="err" id="errEmail">Please enter a valid email address.</div>
+        </div>
+
+        <div class="field">
+            <label>Password <span class="req">*</span></label>
+            <input type="password" id="password" placeholder="Min. 8 characters">
+            <div class="err" id="errPassword">Password must be at least 8 characters.</div>
+        </div>
+
+        <div class="field">
+            <label>Confirm Password <span class="req">*</span></label>
+            <input type="password" id="confirmPassword" placeholder="Re-enter your password">
+            <div class="err" id="errConfirm">Passwords do not match.</div>
+        </div>
+
+        <div class="nav-row">
+            <button class="btn-next" onclick="goTo(2)">Next →</button>
+        </div>
+    </div>
+
+    <!-- ══ STEP 2 – MEDICAL ══ -->
+    <div class="step-panel" id="step2">
+        <div class="step-title">Medical History</div>
+        <div class="step-subtitle">Select all that apply. All sections are required.</div>
+
+        <div class="field">
+            <label>Past Illnesses / Diagnoses <span class="req">*</span></label>
+            <div class="check-group" id="illnessGroup">
+                <label class="check-item"><input type="checkbox" value="Asthma"> Asthma</label>
+                <label class="check-item"><input type="checkbox" value="Bronchitis"> Bronchitis</label>
+                <label class="check-item"><input type="checkbox" value="COPD"> COPD</label>
+                <label class="check-item"><input type="checkbox" value="Allergic Rhinitis"> Allergic Rhinitis</label>
+                <label class="check-item"><input type="checkbox" value="Eczema"> Eczema</label>
+                <label class="check-item"><input type="checkbox" value="Sinusitis"> Sinusitis</label>
+                <label class="check-item"><input type="checkbox" value="Pneumonia"> Pneumonia</label>
+                <label class="check-item"><input type="checkbox" value="None"> None</label>
+            </div>
+            <div class="err" id="errIllness">Please select at least one option.</div>
+        </div>
+
+        <div class="section-divider">Family History</div>
+
+        <div class="field">
+            <label>Family history of respiratory / allergic conditions? <span class="req">*</span></label>
+            <div class="check-group" id="familyIllnessGroup">
+                <label class="check-item"><input type="checkbox" value="Asthma (family)"> Asthma</label>
+                <label class="check-item"><input type="checkbox" value="Allergies (family)"> Allergies</label>
+                <label class="check-item"><input type="checkbox" value="COPD (family)"> COPD</label>
+                <label class="check-item"><input type="checkbox" value="Eczema (family)"> Eczema</label>
+                <label class="check-item"><input type="checkbox" value="Rhinitis (family)"> Rhinitis</label>
+                <label class="check-item" id="familyOtherItem"><input type="checkbox" value="Other (family)" id="familyOtherCheck"> Any other</label>
+                <label class="check-item"><input type="checkbox" value="None (family)"> None</label>
+            </div>
+            <div class="err" id="errFamilyIllness">Please select at least one option.</div>
+
+            <div class="elaborate-box" id="familyOtherBox">
+                <label>Please specify the condition(s)</label>
+                <textarea id="familyOtherText" placeholder="e.g. Hay fever, chronic sinusitis on father's side..."></textarea>
+            </div>
+        </div>
+
+        <div class="section-divider">Current Symptoms</div>
+
+        <div class="field">
+            <label>Symptoms currently experienced <span class="req">*</span></label>
+            <div class="check-group" id="symptomGroup">
+                <label class="check-item"><input type="checkbox" value="Wheezing"> Wheezing</label>
+                <label class="check-item"><input type="checkbox" value="Shortness of breath"> Shortness of breath</label>
+                <label class="check-item"><input type="checkbox" value="Chest tightness"> Chest tightness</label>
+                <label class="check-item"><input type="checkbox" value="Chronic cough"> Chronic cough</label>
+                <label class="check-item"><input type="checkbox" value="Night-time symptoms"> Night-time symptoms</label>
+                <label class="check-item"><input type="checkbox" value="None currently"> None currently</label>
+            </div>
+            <div class="err" id="errSymptom">Please select at least one option.</div>
+        </div>
+
+        <div class="field">
+            <label>Current medications (if any)</label>
+            <textarea id="medications" placeholder="e.g. Salbutamol inhaler, antihistamines, none..."></textarea>
+        </div>
+
+        <div class="nav-row">
+            <button class="btn-back" onclick="goTo(1)">← Back</button>
+            <button class="btn-next" onclick="goTo(3)">Next →</button>
+        </div>
+    </div>
+
+    <!-- ══ STEP 3 – LIFESTYLE ══ -->
+    <div class="step-panel" id="step3">
+        <div class="step-title">Lifestyle & Habits</div>
+        <div class="step-subtitle">All sections are required.</div>
+
+        <!-- Error banner for Supabase failures -->
+        <div class="submit-error" id="submitError"></div>
+
+        <div class="field">
+            <label>Smoking / Vaping <span class="req">*</span></label>
+            <div class="radio-group" id="smokingGroup">
+                <label class="radio-pill"><input type="radio" name="smoking" value="Never"> Never</label>
+                <label class="radio-pill"><input type="radio" name="smoking" value="Former smoker"> Former smoker</label>
+                <label class="radio-pill"><input type="radio" name="smoking" value="Occasional"> Occasional</label>
+                <label class="radio-pill"><input type="radio" name="smoking" value="Regular smoker"> Regular smoker</label>
+            </div>
+            <div class="err" id="errSmoking">Please select an option.</div>
+        </div>
+
+        <div class="field">
+            <label>Present Habits <span class="req">*</span></label>
+            <div class="check-group" id="habitsGroup">
+                <label class="check-item"><input type="checkbox" value="Alcohol"> Alcohol consumption</label>
+                <label class="check-item"><input type="checkbox" value="Caffeine"> High caffeine intake</label>
+                <label class="check-item"><input type="checkbox" value="Junk food"> Frequent junk food</label>
+                <label class="check-item"><input type="checkbox" value="Irregular sleep"> Irregular sleep</label>
+                <label class="check-item"><input type="checkbox" value="Screen overuse"> Excessive screen time</label>
+                <label class="check-item" id="habitOtherItem"><input type="checkbox" value="Other habit" id="habitOtherCheck"> Any other</label>
+                <label class="check-item"><input type="checkbox" value="None (habits)"> None</label>
+            </div>
+            <div class="err" id="errHabits">Please select at least one option.</div>
+
+            <div class="elaborate-box" id="habitsElaborateBox">
+                <label>Please elaborate on your selected habit(s)</label>
+                <textarea id="habitsElaborateText" placeholder="e.g. I drink 2 glasses of alcohol on weekends..."></textarea>
+            </div>
+
+            <div class="elaborate-box" id="habitOtherBox">
+                <label>Specify your other habit(s)</label>
+                <textarea id="habitOtherText" placeholder="e.g. Chewing tobacco, recreational drug use..."></textarea>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Type of Work / Occupation <span class="req">*</span></label>
+            <div class="radio-group" id="workGroup">
+                <label class="radio-pill"><input type="radio" name="work" value="Desk / Office"> Desk / Office</label>
+                <label class="radio-pill"><input type="radio" name="work" value="Outdoor / Field"> Outdoor / Field</label>
+                <label class="radio-pill"><input type="radio" name="work" value="Industrial / Factory"> Industrial / Factory</label>
+                <label class="radio-pill"><input type="radio" name="work" value="Healthcare"> Healthcare</label>
+                <label class="radio-pill"><input type="radio" name="work" value="Student"> Student</label>
+                <label class="radio-pill"><input type="radio" name="work" value="Other work"> Other</label>
+            </div>
+            <div class="err" id="errWork">Please select an option.</div>
+        </div>
+
+        <div class="field">
+            <label>Physical Activity Level <span class="req">*</span></label>
+            <div class="radio-group" id="activityGroup">
+                <label class="radio-pill"><input type="radio" name="activity" value="Sedentary"> Sedentary</label>
+                <label class="radio-pill"><input type="radio" name="activity" value="Light"> Light</label>
+                <label class="radio-pill"><input type="radio" name="activity" value="Moderate"> Moderate</label>
+                <label class="radio-pill"><input type="radio" name="activity" value="Very active"> Very active</label>
+            </div>
+            <div class="err" id="errActivity">Please select an option.</div>
+        </div>
+
+        <div class="field">
+            <label>Known Allergen Exposures <span class="req">*</span></label>
+            <div class="check-group" id="allergenGroup">
+                <label class="check-item"><input type="checkbox" value="Dust mites"> Dust mites</label>
+                <label class="check-item"><input type="checkbox" value="Pollen"> Pollen</label>
+                <label class="check-item"><input type="checkbox" value="Pet dander"> Pet dander</label>
+                <label class="check-item"><input type="checkbox" value="Mould / Damp"> Mould / Damp</label>
+                <label class="check-item"><input type="checkbox" value="Chemical fumes"> Chemical fumes</label>
+                <label class="check-item"><input type="checkbox" value="None known"> None known</label>
+            </div>
+            <div class="err" id="errAllergen">Please select at least one option.</div>
+        </div>
+
+        <div class="field">
+            <label>Stress Level (1 = low &nbsp;·&nbsp; 10 = high) <span class="req">*</span></label>
+            <div class="slider-wrap">
+                <input type="range" id="stressSlider" min="1" max="10" value="5"
+                    oninput="updateSlider('stressSlider','stressVal')">
+                <span class="slider-val" id="stressVal">5</span>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Sleep Quality (1 = poor &nbsp;·&nbsp; 10 = excellent) <span class="req">*</span></label>
+            <div class="slider-wrap">
+                <input type="range" id="sleepSlider" min="1" max="10" value="6"
+                    oninput="updateSlider('sleepSlider','sleepVal')">
+                <span class="slider-val" id="sleepVal">6</span>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Any other relevant details</label>
+            <textarea id="otherDetails" placeholder="e.g. Recently moved cities, frequent respiratory infections..."></textarea>
+        </div>
+
+        <div class="nav-row">
+            <button class="btn-back" onclick="goTo(2)">← Back</button>
+            <button class="btn-submit" id="submitBtn" onclick="submitForm()">Submit ✓</button>
+        </div>
+    </div>
+
+    <div class="login-link-row" id="loginRow">
+        Already have an account? <a href="homepage.html">Log in</a>
+    </div>
+
+</div><!-- /card -->
+
+<script>
+// ══════════════════════════════════════════
+//  SUPABASE CONFIG — replace with your values
+// ══════════════════════════════════════════
+const SUPABASE_URL      = 'https://egjyjnwswcckknjienhi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnanlqbndzd2Nja2tuamllbmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjMxMTgsImV4cCI6MjA5MTU5OTExOH0.6M4DpPIS0Fxpasf5SHn6K31qJQaQ3T_UygSXhDtcTds';
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ══════════════════════════════════════════
+//  PROGRESS BAR
+// ══════════════════════════════════════════
+let currentStep = 1;
+
+function updateProgress(step) {
+    document.getElementById('barFill').style.width = ((step / 3) * 100) + '%';
+    ['lbl1','lbl2','lbl3'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        el.className = 'step-label';
+        if (i + 1 < step) el.classList.add('done');
+        else if (i + 1 === step) el.classList.add('active');
+    });
+    ['dot1','dot2','dot3'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        el.className = 'dot';
+        if (i + 1 < step) el.classList.add('done');
+        else if (i + 1 === step) el.classList.add('active');
+    });
+}
+
+// ══════════════════════════════════════════
+//  VALIDATION
+// ══════════════════════════════════════════
+function showErr(id, show) {
+    document.getElementById(id).style.display = show ? 'block' : 'none';
+}
+
+function validateStep(step) {
+    let ok = true;
+
+    if (step === 1) {
+        const name    = document.getElementById('name').value.trim();
+        const age     = parseInt(document.getElementById('age').value);
+        const gender  = document.getElementById('gender').value;
+        const city    = document.getElementById('city').value.trim();
+        const env     = document.querySelector('input[name="env"]:checked');
+        const email   = document.getElementById('email').value.trim();
+        const pw      = document.getElementById('password').value;
+        const confirm = document.getElementById('confirmPassword').value;
+
+        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+        showErr('errName',     !name);
+        showErr('errAge',      !age || age < 1 || age > 120);
+        showErr('errGender',   !gender);
+        showErr('errCity',     !city);
+        showErr('errEnv',      !env);
+        showErr('errEmail',    !emailValid);
+        showErr('errPassword', pw.length < 8);
+        showErr('errConfirm',  pw !== confirm || confirm === '');
+
+        ok = name && age >= 1 && age <= 120 && gender && city && env
+             && emailValid && pw.length >= 8 && pw === confirm;
+    }
+
+    if (step === 2) {
+        const illness = document.querySelectorAll('#illnessGroup input:checked').length > 0;
+        const family  = document.querySelectorAll('#familyIllnessGroup input:checked').length > 0;
+        const symptom = document.querySelectorAll('#symptomGroup input:checked').length > 0;
+
+        showErr('errIllness',       !illness);
+        showErr('errFamilyIllness', !family);
+        showErr('errSymptom',       !symptom);
+
+        ok = illness && family && symptom;
+    }
+
+    if (step === 3) {
+        const smoking  = document.querySelector('input[name="smoking"]:checked');
+        const habits   = document.querySelectorAll('#habitsGroup input:checked').length > 0;
+        const work     = document.querySelector('input[name="work"]:checked');
+        const activity = document.querySelector('input[name="activity"]:checked');
+        const allergen = document.querySelectorAll('#allergenGroup input:checked').length > 0;
+
+        showErr('errSmoking',  !smoking);
+        showErr('errHabits',   !habits);
+        showErr('errWork',     !work);
+        showErr('errActivity', !activity);
+        showErr('errAllergen', !allergen);
+
+        ok = smoking && habits && work && activity && allergen;
+    }
+
+    return ok;
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+function goTo(step) {
+    if (step > currentStep && !validateStep(currentStep)) return;
+    document.getElementById('step' + currentStep).classList.remove('active');
+    currentStep = step;
+    document.getElementById('step' + currentStep).classList.add('active');
+    updateProgress(step);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════
+//  RADIO PILLS
+// ══════════════════════════════════════════
+document.querySelectorAll('.radio-group').forEach(group => {
+    group.querySelectorAll('.radio-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            group.querySelectorAll('.radio-pill').forEach(p => p.classList.remove('selected'));
+            pill.classList.add('selected');
+        });
+    });
+});
+
+// ══════════════════════════════════════════
+//  CHECKBOX HIGHLIGHTS
+// ══════════════════════════════════════════
+document.querySelectorAll('.check-group').forEach(group => {
+    group.querySelectorAll('.check-item').forEach(item => {
+        const cb = item.querySelector('input[type="checkbox"]');
+        cb.addEventListener('change', () => {
+            item.classList.toggle('selected', cb.checked);
+        });
+    });
+});
+
+// ══════════════════════════════════════════
+//  HABITS ELABORATE BOXES
+// ══════════════════════════════════════════
+function updateHabitsBoxes() {
+    const checkboxes  = document.querySelectorAll('#habitsGroup input[type="checkbox"]');
+    const anyActive   = [...checkboxes].some(cb => cb.checked && cb.value !== 'None (habits)' && cb.value !== 'Other habit');
+    const otherActive = document.getElementById('habitOtherCheck').checked;
+
+    document.getElementById('habitsElaborateBox').style.display = anyActive   ? 'block' : 'none';
+    document.getElementById('habitOtherBox').style.display      = otherActive ? 'block' : 'none';
+
+    if (!anyActive)   document.getElementById('habitsElaborateText').value = '';
+    if (!otherActive) document.getElementById('habitOtherText').value = '';
+}
+
+document.querySelectorAll('#habitsGroup input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', updateHabitsBoxes);
+});
+
+// ══════════════════════════════════════════
+//  SLIDERS
+// ══════════════════════════════════════════
+function updateSlider(sliderId, valId) {
+    const slider = document.getElementById(sliderId);
+    const val    = slider.value;
+    document.getElementById(valId).textContent = val;
+    const pct = ((val - 1) / 9) * 100;
+    slider.style.background =
+        `linear-gradient(to right, #d946ef 0%, #d946ef ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`;
+}
+
+updateSlider('stressSlider', 'stressVal');
+updateSlider('sleepSlider',  'sleepVal');
+
+// ══════════════════════════════════════════
+//  SUBMIT — SUPABASE SIGNUP + PROFILE INSERT
+// ══════════════════════════════════════════
+async function submitForm() {
+    if (!validateStep(3)) return;
+
+    const submitBtn = document.getElementById('submitBtn');
+    const errorBanner = document.getElementById('submitError');
+
+    // Disable button while working
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    errorBanner.style.display = 'none';
+
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    // ── Step 1: Create auth user (triggers OTP verification email) ──
+    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+        email,
+        password
+    });
+
+    if (authError) {
+        errorBanner.textContent = authError.message;
+        errorBanner.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit ✓';
+        return;
+    }
+
+    const userId = authData.user.id;
+
+    // ── Step 2: Insert profile data into profiles table ──
+    const { error: profileError } = await supabaseClient.from('profiles').insert({
+        id:                 userId,
+        name:               document.getElementById('name').value.trim(),
+        age:                parseInt(document.getElementById('age').value),
+        gender:             document.getElementById('gender').value,
+        city:               document.getElementById('city').value.trim(),
+        environment:        document.querySelector('input[name="env"]:checked').value,
+        illnesses:          [...document.querySelectorAll('#illnessGroup input:checked')].map(x => x.value),
+        family_illnesses:   [...document.querySelectorAll('#familyIllnessGroup input:checked')].map(x => x.value),
+        family_other:       document.getElementById('familyOtherText').value || null,
+        symptoms:           [...document.querySelectorAll('#symptomGroup input:checked')].map(x => x.value),
+        medications:        document.getElementById('medications').value || null,
+        smoking:            document.querySelector('input[name="smoking"]:checked').value,
+        habits:             [...document.querySelectorAll('#habitsGroup input:checked')].map(x => x.value),
+        habits_detail:      document.getElementById('habitsElaborateText').value || null,
+        habits_other: document.getElementById('habitOtherText').value || null,
+        work:               document.querySelector('input[name="work"]:checked').value,
+        activity:           document.querySelector('input[name="activity"]:checked').value,
+        allergens:          [...document.querySelectorAll('#allergenGroup input:checked')].map(x => x.value),
+        stress_level:       parseInt(document.getElementById('stressSlider').value),
+        sleep_quality:      parseInt(document.getElementById('sleepSlider').value),
+        others:              document.getElementById('otherDetails').value || null
+    });
+
+    if (profileError) {
+        errorBanner.textContent = 'Account created but profile save failed: ' + profileError.message;
+        errorBanner.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit ✓';
+        return;
+    }
+
+    // ── Step 3: Redirect to OTP verification page ──
+    window.location.href = 'verify.html?email='+encodeURIComponent(email);
+}
+</script>
+
+</body>
+</html>

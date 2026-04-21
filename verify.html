@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Verify Email – Asthma Risk Prediction</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --pink: #d946ef;
+    --blue: #5f9cff;
+    --gradient: linear-gradient(135deg, #5f9cff, #d946ef);
+    --text-main: #1a1a2e;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --error: #ef4444;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--gradient);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 16px;
+}
+
+.card {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    border-radius: 20px;
+    padding: 40px 38px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+    text-align: center;
+}
+
+.icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.card h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.otp-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.otp-box {
+    width: 48px;
+    height: 56px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-main);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.otp-box:focus { border-color: var(--pink); }
+
+.btn-verify {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 99px;
+    background: var(--gradient);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-bottom: 16px;
+}
+
+.btn-verify:hover { opacity: 0.9; }
+.btn-verify:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.error-msg {
+    font-size: 13px;
+    color: var(--error);
+    margin-bottom: 12px;
+    display: none;
+}
+
+.resend-row {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.resend-link {
+    color: var(--pink);
+    font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+}
+
+.resend-link:hover { text-decoration: underline; }
+.resend-link:disabled { opacity: 0.5; cursor: not-allowed; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <div class="icon"></div>
+    <h1>Check your email</h1>
+    <p>We've sent an 8-digit verification code to your email address. Enter it below to activate your account.</p>
+
+    <div class="otp-row">
+        <input class="otp-box" id="o1" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" id="o2" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" id="o3" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" id="o4" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" id="o5" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" id="o6" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" id="o7" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" id="o8" maxlength="1" type="text" inputmode="numeric">
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <button class="btn-verify" id="verifyBtn" onclick="verifyOtp()">Verify →</button>
+
+    <div class="resend-row">
+        Didn't receive it?
+        <button class="resend-link" id="resendBtn" onclick="resendOtp()">Resend code</button>
+    </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  SUPABASE CONFIG — replace with your values
+// ══════════════════════════════════════════
+const SUPABASE_URL      = 'https://egjyjnwswcckknjienhi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnanlqbndzd2Nja2tuamllbmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjMxMTgsImV4cCI6MjA5MTU5OTExOH0.6M4DpPIS0Fxpasf5SHn6K31qJQaQ3T_UygSXhDtcTds';
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── Get email from URL parameter ──
+// register.html passes it as: verify.html?email=user@example.com
+const urlParams = new URLSearchParams(window.location.search);
+const email = urlParams.get('email');
+
+// If no email in URL, redirect back to register
+if (!email) {
+    window.location.href = 'register.html';
+}
+
+// ── Auto-advance between OTP boxes ──
+const boxes = ['o1','o2','o3','o4','o5','o6', 'o7', 'o8'];
+
+boxes.forEach((id, i) => {
+    const el = document.getElementById(id);
+
+    el.addEventListener('input', () => {
+        el.value = el.value.replace(/\D/g, '');
+        if (el.value && i < boxes.length - 1) {
+            document.getElementById(boxes[i + 1]).focus();
+        }
+    });
+
+    el.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !el.value && i > 0) {
+            document.getElementById(boxes[i - 1]).focus();
+        }
+    });
+});
+
+// ── Get the 6-digit token from boxes ──
+function getOtpToken() {
+    return boxes.map(id => document.getElementById(id).value).join('');
+}
+
+// ── Verify OTP ──
+async function verifyOtp() {
+    const token     = getOtpToken();
+    const errorMsg  = document.getElementById('errorMsg');
+    const verifyBtn = document.getElementById('verifyBtn');
+
+    if (token.length < 8) {
+        errorMsg.textContent = 'Please enter all 8 digits.';
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    errorMsg.style.display = 'none';
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying...';
+
+    const { error } = await supabaseClient.auth.verifyOtp({
+        email,
+        token,
+        type: 'signup'
+    });
+
+    if (error) {
+        errorMsg.textContent = error.message;
+        errorMsg.style.display = 'block';
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify →';
+        return;
+    }
+
+    // Success — go to dashboard
+    window.location.href = 'dashboard.html';
+}
+
+// ── Resend OTP ──
+async function resendOtp() {
+    const resendBtn = document.getElementById('resendBtn');
+    const errorMsg  = document.getElementById('errorMsg');
+
+    resendBtn.disabled = true;
+    resendBtn.textContent = 'Sent!';
+
+    const { error } = await supabaseClient.auth.resend({
+        type: 'signup',
+        email
+    });
+
+    if (error) {
+        errorMsg.textContent = error.message;
+        errorMsg.style.display = 'block';
+    }
+
+    // Re-enable after 30 seconds
+    setTimeout(() => {
+        resendBtn.disabled = false;
+        resendBtn.textContent = 'Resend code';
+    }, 30000);
+}
+</script>
+
+</body>
+</html>

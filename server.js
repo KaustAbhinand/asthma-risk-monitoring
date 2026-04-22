@@ -34,8 +34,9 @@ app.post("/predict", async (req, res) => {
         userData.no2 = sensorData.no2;
         userData.h2s = sensorData.h2s;
         userData.temperature = sensorData.temperature;
+        userData.humidity = sensorData.humidity;
 
-        // ✅ 3. Build features AFTER override
+        //  3. Build features AFTER override
         const features = [
             userData.age,
             userData.gender,
@@ -52,6 +53,7 @@ app.post("/predict", async (req, res) => {
             userData.no2,
             userData.h2s,
             userData.temperature,
+            userData.humidity,
         ];
 
         console.log("Features:", features);
@@ -82,7 +84,7 @@ app.post("/predict", async (req, res) => {
             lastRiskSent = baseRisk;
         }
 
-        // ✅ Return sensor data also
+        //  Return sensor data also
         res.json({
             risk: baseRisk,
             level,
@@ -107,10 +109,10 @@ app.post("/precautions", async (req, res) => {
 
         const climateData = {
             temperature: sensorData.temperature,
-            humidity: userData.humidity,
             pm25: sensorData.pm25,
             no2: sensorData.no2,
-            h2s: sensorData.h2s
+            h2s: sensorData.h2s,
+            humidity: sensorData.humidity
         };
 
         const precautions = await getPrecautionMeasures(userData, climateData);

@@ -378,6 +378,14 @@ body {
 
     <div class="aqi-number" id="h2s-val">--</div>
     <div class="aqi-label">H₂S</div>
+
+    <div class="aqi-number" id="humidity-val">--</div>
+    <div class="aqi-label">Humidity</div>
+
+     <div class="aqi-number" id="temperature-val">--</div>
+    <div class="aqi-label">Temperature</div>
+
+
 </div>
 
 
@@ -562,6 +570,7 @@ function transformToModelInput(user) { // transform the data in the ML model for
         no2: 0,
         h2s: 0,
         temperature: 0,
+        humidity: 0,
 
         email : user.email
     };
@@ -593,6 +602,8 @@ async function getPrediction() { // get the predictions
     document.getElementById("pm25-val").innerText = result.sensors.pm25;
     document.getElementById("no2-val").innerText  = result.sensors.no2;
     document.getElementById("h2s-val").innerText  = result.sensors.h2s;
+    document.getElementById("humidity-val").innerText  = result.sensors.humidity;
+    document.getElementById("temperature-val").innerText  = result.sensors.temperature;
 }
     return result;
 }

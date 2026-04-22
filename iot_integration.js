@@ -17,6 +17,7 @@ async function getSensorData() {
             no2: parseFloat(latest.field2) || 0,
             h2s: parseFloat(latest.field1) || 0,
             temperature: parseFloat(latest.field4) || 30,
+            humidity: parseFloat(latest.field5) || 0
         };
         console.log("ThingSpeak data:", latest);
 
@@ -29,6 +30,7 @@ async function getSensorData() {
             no2: 0,
             h2s: 0,
             temperature: 30,
+            humidity: 0
         };
     }
 }

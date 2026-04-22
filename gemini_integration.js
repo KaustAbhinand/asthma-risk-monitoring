@@ -25,7 +25,7 @@ Climate Data:
 Return:
 - Clear, practical precautions
 - Avoid medical jargon
-- Keep it actionable
+- Keep it actionable and understandable
 - clean formatting
 - 5-7 bullet points maximum
 - Directly give the points, no introductory text or conclusion, just the bullet points.

@@ -369,21 +369,16 @@ body {
     </div>
 
     <!-- ── LOCATION ── -->
-    <div class="section-title">Present Location</div>
-    <div class="card">
-        <div class="card-header"><span class="card-icon"></span> Location & Air Quality</div>
-        <div class="location-row">
-            <span class="location-pin"></span>
-            <div class="location-info">
-                <h3 id="loc-city">Detecting...</h3>
-                <p id="loc-coords">Fetching coordinates...</p>
-            </div>
-            <div class="location-aqi">
-                <div class="aqi-number" id="aqi-val"></div>
-                <div class="aqi-label">AQI (Placeholder)</div>
-            </div>
-        </div>
-    </div>
+ <div class="location-aqi">
+    <div class="aqi-number" id="pm25-val">--</div>
+    <div class="aqi-label">PM2.5</div>
+
+    <div class="aqi-number" id="no2-val">--</div>
+    <div class="aqi-label">NO₂</div>
+
+    <div class="aqi-number" id="h2s-val">--</div>
+    <div class="aqi-label">H₂S</div>
+</div>
 
 
     <!-- ── PRECAUTIONS ── -->
@@ -592,8 +587,12 @@ async function getPrediction() { // get the predictions
     document.getElementById("riskNumber").innerText = result.risk;
     document.getElementById("riskBadge").innerText = result.level;
 
-    if (result.sensors) { console.log("Sensor data:", result.sensors); // Show PM2.5 as AQI placeholder 
-    //document.getElementById("aqi-val").innerText = result.sensors.pm25;
+    if (result.sensors) {
+    console.log("Sensor data:", result.sensors);
+
+    document.getElementById("pm25-val").innerText = result.sensors.pm25;
+    document.getElementById("no2-val").innerText  = result.sensors.no2;
+    document.getElementById("h2s-val").innerText  = result.sensors.h2s;
 }
     return result;
 }

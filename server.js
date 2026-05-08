@@ -72,7 +72,8 @@ app.post("/predict", async (req, res) => {
         else if (baseRisk >= 40) level = "Moderate";
 
         // ── Email Alert ──
-        if (baseRisk >= 70 && (lastRiskSent !== baseRisk || lastRiskSent < 70)) {
+        if (baseRisk >= 70) {
+            console.log("Attempting to send alert email...");
             console.log("Email:", userData.email);
 
             await sendAlertEmail(
@@ -81,7 +82,7 @@ app.post("/predict", async (req, res) => {
                 level
             );
 
-            lastRiskSent = baseRisk;
+            //lastRiskSent = baseRisk;
         }
 
         //  Return sensor data also

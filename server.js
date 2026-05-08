@@ -6,10 +6,12 @@ const { score } = require("./model");
 const { getSensorData } = require("./iot_integration");
 const { getPrecautionMeasures } = require("./gemini_integration");
 const { sendAlertEmail } = require("./email_service");
+const { setupDeployment } = require("./deployment");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+setupDeployment(app);
 
 // ─────────────────────────────
 // TEST ROUTE
@@ -62,7 +64,7 @@ app.post("/predict", async (req, res) => {
         let baseRisk = score(features);
         baseRisk *= 0.8; 
         baseRisk += 5;
-        baseRisk = Math.round(baseRisk);
+        baseRisk = Math.round(baseRisk*1000)/1000; // 3 digit rounding off
         console.log("BaseRisk:", baseRisk);
 
 
@@ -128,7 +130,8 @@ app.post("/precautions", async (req, res) => {
 // ─────────────────────────────
 // START SERVER
 // ─────────────────────────────
-app.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
+const PORT  = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
 

@@ -5,12 +5,16 @@ console.log("Email service initialized with user:", process.env.EMAIL_USER);
 
 // Gmail transporter
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
 
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
+
+    family: 4,
 
     connectionTimeout: 10000,
     greetingTimeout: 10000,
@@ -54,10 +58,14 @@ Please open your dashboard to see your precautions.
             html: `
                 <h2>High Risk Detected</h2>
 
-                <p>Your current asthma risk score is 
-                <b>${risk}</b>.</p>
+                <p>
+                    Your current asthma risk score is 
+                    <b>${risk}</b>.
+                </p>
 
-                <p>Risk Level: <b>${level}</b></p>
+                <p>
+                    Risk Level: <b>${level}</b>
+                </p>
 
                 <p>
                     Please open your dashboard to see 

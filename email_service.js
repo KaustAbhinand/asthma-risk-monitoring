@@ -6,11 +6,18 @@ console.log("Email service initialized with user:", process.env.EMAIL_USER);
 
 // SMTP transporter
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-    }
+    },
+    tls: { rejectUnauthorized: false },
+    connnectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000
+
 });
 
 // Verify connection (debug)

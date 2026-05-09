@@ -8,13 +8,12 @@ const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
     secure: false,
-
+    family: 4,  
+    
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-
-    family: 4,
 
     connectionTimeout: 10000,
     greetingTimeout: 10000,
@@ -85,6 +84,7 @@ Please open your dashboard to see your precautions.
 
     } catch (err) {
         console.error("❌ Email error:", err);
+        throw err;  // Re-throw so caller knows it failed
     }
 }
 

@@ -1,14 +1,14 @@
 require("dotenv").config();
-const brevo = require('@getbrevo/brevo');
+const SibApiV3Sdk = require('@getbrevo/brevo');
 
 console.log("Email service initialized with Brevo");
 
-// Initialize Brevo API
-const apiInstance = new brevo.TransactionalEmailsApi();
-apiInstance.setApiKey(
-    brevo.TransactionalEmailsApiApiKeys.apiKey,
-    process.env.BREVO_API_KEY
-);
+// Initialize Brevo API client
+let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+// Set API key
+let apiKey = apiInstance.authentications['apiKey'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
 async function sendAlertEmail(to, risk, level) {
     if (!to) {
@@ -20,7 +20,7 @@ async function sendAlertEmail(to, risk, level) {
         console.log("Sending email to:", to);
 
         // Create email object
-        const sendSmtpEmail = new brevo.SendSmtpEmail();
+        let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
         
         sendSmtpEmail.subject = "High Asthma Risk Alert";
         sendSmtpEmail.to = [{ email: to.trim() }];
@@ -29,14 +29,6 @@ async function sendAlertEmail(to, risk, level) {
             <p>Your current asthma risk score is <b>${risk}</b>.</p>
             <p>Risk Level: <b>${level}</b></p>
             <p>Please open your dashboard to see your precautions.</p>
-        `;
-        sendSmtpEmail.textContent = `
-High Risk Detected
-
-Your current asthma risk score is ${risk}
-Risk Level: ${level}
-
-Please open your dashboard to see your precautions.
         `;
         sendSmtpEmail.sender = { 
             name: "Asthma Alert System", 

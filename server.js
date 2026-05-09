@@ -76,11 +76,15 @@ app.post("/predict", async (req, res) => {
             console.log("Attempting to send alert email...");
             console.log("Email:", userData.email);
 
-            await sendAlertEmail(
+            sendAlertEmail(
                 userData.email,
                 baseRisk,
                 level
-            );
+            ).then(() => {
+        console.log("Email task completed");
+         }).catch((err) => {
+        console.error("Background email error:", err);
+         });
 
             //lastRiskSent = baseRisk;
         }

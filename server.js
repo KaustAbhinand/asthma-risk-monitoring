@@ -70,9 +70,9 @@ app.post("/predict", async (req, res) => {
         let level = "Low";
         if (baseRisk >= 70) level = "High";
         else if (baseRisk >= 40) level = "Moderate";
-
+        let lastRiskSent = lastRiskSent || 0;
         // ── Email Alert ──
-        if (baseRisk >= 70) {
+        if (baseRisk >= 70 && lastRiskSent < 70) { // prevent spam.
             console.log("Attempting to send alert email...");
             console.log("Email:", userData.email);
 
@@ -86,7 +86,7 @@ app.post("/predict", async (req, res) => {
         console.error("Background email error:", err);
          });
 
-            //lastRiskSent = baseRisk;
+            lastRiskSent = baseRisk; // update last risk sent.
         }
 
         //  Return sensor data also

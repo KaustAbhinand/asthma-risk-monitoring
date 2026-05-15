@@ -84,7 +84,7 @@ async function monitorUsers() {
             baseRisk *= 0.8;
             baseRisk += 5;
 
-            baseRisk = Math.round(baseRisk );
+            //baseRisk = Math.round(baseRisk );
 
             console.log(
                 `${email} -> Risk: ${baseRisk}`

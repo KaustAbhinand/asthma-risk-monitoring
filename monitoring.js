@@ -82,8 +82,8 @@ async function monitorUsers() {
 
             let baseRisk = score(features);
 
-            baseRisk *= 0.8;
-            baseRisk += 5;
+            //baseRisk *= 0.8;
+            //baseRisk += 5;
 
             baseRisk = Math.round(baseRisk );
 

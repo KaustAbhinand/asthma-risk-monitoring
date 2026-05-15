@@ -84,7 +84,7 @@ async function monitorUsers() {
             baseRisk *= 0.8;
             baseRisk += 5;
 
-            //baseRisk = Math.round(baseRisk );
+            baseRisk = Math.round(baseRisk );
 
             console.log(
                 `${email} -> Risk: ${baseRisk}`
@@ -150,7 +150,7 @@ async function monitorUsers() {
     }
 }
 
-// Run every 30 minutes
+// Run every 1 minutes
 setInterval(
     monitorUsers,
     1 * 60 * 1000

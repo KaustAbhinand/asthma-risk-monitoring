@@ -81,8 +81,8 @@ async function monitorUsers() {
 
             let baseRisk = score(features);
 
-            //baseRisk *= 0.8;
-            //baseRisk += 5;
+            baseRisk *= 0.8;
+            baseRisk += 5;
 
             baseRisk = Math.round(baseRisk );
 
@@ -153,7 +153,7 @@ async function monitorUsers() {
 // Run every 5 minutes
 setInterval(
     monitorUsers,
-    1 * 60 * 1000
+    5 * 60 * 1000
 );
 
 // Run immediately

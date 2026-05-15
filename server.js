@@ -65,8 +65,8 @@ app.post("/predict", async (req, res) => {
 
         // ── ML Prediction ──
         let baseRisk = score(features); 
-        //baseRisk *= 0.8;
-        //baseRisk += 5; // Final value
+        baseRisk *= 0.8;
+        baseRisk += 5; // Final value
         baseRisk = Math.round(baseRisk);
         console.log("BaseRisk:", baseRisk);
 

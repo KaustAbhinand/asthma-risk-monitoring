@@ -38,7 +38,14 @@ Return:
                     {
                         parts: [{ text: prompt }]
                     }
-                ]
+                ],
+
+                generationConfig: {
+                    temperature: 0.9,          // High temperature for variety
+                    topK: 40,                  // Diverse token sampling
+                    topP: 0.95,                // Nucleus sampling
+                    maxOutputTokens: 500,      // Reasonable limit
+                }
             }
         );
 

@@ -2,18 +2,20 @@ const express = require("express");
 const cors = require("cors");
 
 // imports
-const { score } = require("./model");
-const { getSensorData } = require("./iot_integration");
-const { getPrecautionMeasures } = require("./gemini_integration");
-const { sendAlertEmail } = require("./email_service");
-const { setupDeployment } = require("./deployment");
+const { score } = require("./model"); // ML model
+const { getSensorData } = require("./iot_integration"); // Sensor integration
+const { getPrecautionMeasures } = require("./gemini_integration"); // Gemini API
+const { sendAlertEmail } = require("./email_service"); // Email service
+const { setupDeployment } = require("./deployment"); // Deployment code
+require("./monitoring");  // Monitoring code. 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 setupDeployment(app);
 
-let lastRiskSent = null;
+const lastAlertTime = {};
+const cooldown = 15*60*1000; // 15 minutes. 
 // ─────────────────────────────
 // TEST ROUTE
 // ─────────────────────────────
@@ -63,6 +65,8 @@ app.post("/predict", async (req, res) => {
 
         // ── ML Prediction ──
         let baseRisk = score(features); 
+        baseRisk *= 0.8;
+        baseRisk += 5; // Final value
         baseRisk = Math.round(baseRisk);
         console.log("BaseRisk:", baseRisk);
 
@@ -73,22 +77,39 @@ app.post("/predict", async (req, res) => {
         else if (baseRisk >= 40) level = "Moderate";
         
         // ── Email Alert ──
-        if (baseRisk >= 70 && lastRiskSent < 70) { // prevent spam.
-            console.log("Attempting to send alert email...");
-            console.log("Email:", userData.email);
+        if (baseRisk >= 70) {
 
-            sendAlertEmail(
-                userData.email,
-                baseRisk,
-                level
-            ).then(() => {
-        console.log("Email task completed");
-         }).catch((err) => {
-        console.error("Background email error:", err);
-         });
+    const email = userData.email;
+    const now = Date.now();
 
-            lastRiskSent = baseRisk; // update last risk sent.
-        }
+    // Get last alert time for this user
+    const previousTime = lastAlertTime[email] || 0;
+
+    // Check cooldown
+    const cooldownExpired =
+        now - previousTime > cooldown;
+
+    if (cooldownExpired) {
+        
+        console.log("Email:", email);
+
+        sendAlertEmail(
+            email,
+            baseRisk,
+            level
+        ).then(() => {
+            console.log("Email task completed");
+        }).catch((err) => {
+            console.error("Background email error:", err);
+        });
+
+        // Update alert timestamp
+        lastAlertTime[email] = now;
+    }
+    else {
+        console.log(`Cooldown active for ${email}`);
+    }
+}
 
         //  Return sensor data also
         res.json({

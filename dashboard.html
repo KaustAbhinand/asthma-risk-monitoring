@@ -592,6 +592,8 @@ async function getPrediction() { // get the predictions
     });
 
     const result = await response.json();
+    console.log("Prediction result:", result);
+    console.log("Risk:", result.risk, "Level:", result.level);
 
     document.getElementById("riskNumber").innerText = result.risk;
     document.getElementById("riskBadge").innerText = result.level;

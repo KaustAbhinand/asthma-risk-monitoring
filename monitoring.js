@@ -26,8 +26,7 @@ async function monitorUsers() {
         // Fetch profiles
         const { data: users, error } =
             await supabase
-                .from("profiles")
-                .select("*");
+                .from("profiles").select("*");
 
         if (error) {
             console.error("Supabase Error:", error);
@@ -154,7 +153,7 @@ async function monitorUsers() {
 // Run every 5 minutes
 setInterval(
     monitorUsers,
-    5 * 60 * 1000
+    1 * 60 * 1000
 );
 
 // Run immediately

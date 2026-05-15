@@ -150,10 +150,10 @@ async function monitorUsers() {
     }
 }
 
-// Run every 5 minutes
+// Run every 30 minutes
 setInterval(
     monitorUsers,
-    5 * 60 * 1000
+    1 * 60 * 1000
 );
 
 // Run immediately

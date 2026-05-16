@@ -15,7 +15,7 @@ const supabase = createClient(
 // Cooldown tracking
 const lastAlertTime = {};
 
-const COOLDOWN = 1 * 60 * 1000; // 1 minute
+const COOLDOWN = 2 * 60 * 60 * 1000; // 2 hours
 
 async function monitorUsers() {
 
@@ -150,10 +150,10 @@ async function monitorUsers() {
     }
 }
 
-// Run every 1 minutes
+// Run every 2 hours
 setInterval(
     monitorUsers,
-    1 * 60 * 1000
+    2 *60 * 60 * 1000
 );
 
 // Run immediately

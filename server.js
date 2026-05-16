@@ -15,7 +15,7 @@ app.use(express.json());
 setupDeployment(app);
 
 const lastAlertTime = {};
-const cooldown = 1*60*1000; // 1 minute. 
+const cooldown = 2*60*60*1000; // 2 hours
 // ─────────────────────────────
 // TEST ROUTE
 // ─────────────────────────────
